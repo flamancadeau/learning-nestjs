@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Company } from '../../companay/entities/companay.entity';
+import { Company } from '../../company/entities/company.entity';
 import { RentalPrice } from '../../rental-price/entities/rental-price.entity';
 import { RentalAvailability } from '../../rental-availability/entities/rental-availability.entity';
 import { Booking } from '../../booking.entity/entities/booking.entity.entity';

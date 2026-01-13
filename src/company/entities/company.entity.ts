@@ -29,7 +29,7 @@ export class Company {
   @Column({ nullable: true })
   industry?: string;
 
-  @OneToMany(() => User, (user) => user.company)
+  @OneToMany(() => User, (user) => user.companyId)
   users: User[];
 
   @OneToMany(() => RentalItem, (item) => item.company)

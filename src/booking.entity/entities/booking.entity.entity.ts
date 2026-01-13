@@ -14,7 +14,7 @@ export class Booking {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, (user) => user.bookings)
+  @ManyToOne(() => User)
   client: User;
 
   @ManyToOne(() => RentalItem, (item) => item.bookings)
