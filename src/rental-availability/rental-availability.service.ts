@@ -1,26 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRentalAvailabilityDto } from './dto/create-rental-availability.dto';
 import { UpdateRentalAvailabilityDto } from './dto/update-rental-availability.dto';
+import { RentalAvailability } from './entities/rental-availability.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class RentalAvailabilityService {
-  create(createRentalAvailabilityDto: CreateRentalAvailabilityDto) {
-    return 'This action adds a new rentalAvailability';
+  constructor(
+    @InjectRepository(RentalAvailability)
+    private availabilityRepository: Repository<RentalAvailability>,
+  ) { }
+
+  async create(createRentalAvailabilityDto: CreateRentalAvailabilityDto) {
+    const av = this.availabilityRepository.create(createRentalAvailabilityDto);
+    return await this.availabilityRepository.save(av);
   }
 
-  findAll() {
-    return `This action returns all rentalAvailability`;
+  async findAll() {
+    return await this.availabilityRepository.find({ relations: ['rentalItem'] });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} rentalAvailability`;
+  async findOne(id: string) {
+    const av = await this.availabilityRepository.findOne({ where: { id }, relations: ['rentalItem'] });
+    if (!av) throw new NotFoundException('Availability not found');
+    return av;
   }
 
-  update(id: number, updateRentalAvailabilityDto: UpdateRentalAvailabilityDto) {
-    return `This action updates a #${id} rentalAvailability`;
+  async update(id: string, updateRentalAvailabilityDto: UpdateRentalAvailabilityDto) {
+    const av = await this.availabilityRepository.preload({ id, ...(updateRentalAvailabilityDto as any) });
+    if (!av) throw new NotFoundException('Availability not found');
+    return await this.availabilityRepository.save(av);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} rentalAvailability`;
+  async remove(id: string) {
+    const av = await this.availabilityRepository.findOne({ where: { id } });
+    if (!av) throw new NotFoundException('Availability not found');
+    await this.availabilityRepository.remove(av);
   }
 }

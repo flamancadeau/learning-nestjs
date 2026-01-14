@@ -15,7 +15,7 @@ import { UpdateRentalAvailabilityDto } from './dto/update-rental-availability.dt
 export class RentalAvailabilityController {
   constructor(
     private readonly rentalAvailabilityService: RentalAvailabilityService,
-  ) {}
+  ) { }
 
   @Post()
   create(@Body() createRentalAvailabilityDto: CreateRentalAvailabilityDto) {
@@ -29,7 +29,7 @@ export class RentalAvailabilityController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.rentalAvailabilityService.findOne(+id);
+    return this.rentalAvailabilityService.findOne(id);
   }
 
   @Patch(':id')
@@ -38,13 +38,13 @@ export class RentalAvailabilityController {
     @Body() updateRentalAvailabilityDto: UpdateRentalAvailabilityDto,
   ) {
     return this.rentalAvailabilityService.update(
-      +id,
+      id,
       updateRentalAvailabilityDto,
     );
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.rentalAvailabilityService.remove(+id);
+    return this.rentalAvailabilityService.remove(id);
   }
 }
