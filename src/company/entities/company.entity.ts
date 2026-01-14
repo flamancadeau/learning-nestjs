@@ -21,10 +21,10 @@ export class Company {
   description?: string;
 
   @Column({ nullable: true })
-  registrationNo?: string; // 工商注册号
+  registrationNo?: string;
 
   @Column({ nullable: true })
-  taxNo?: string; // 税号
+  taxNo?: string;
 
   @Column({ nullable: true })
   industry?: string;

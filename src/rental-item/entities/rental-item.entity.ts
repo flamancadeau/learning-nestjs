@@ -10,6 +10,7 @@ import {
 import { Company } from '../../company/entities/company.entity';
 import { RentalPrice } from '../../rental-price/entities/rental-price.entity';
 import { RentalAvailability } from '../../rental-availability/entities/rental-availability.entity';
+// FIXED IMPORT PATH BELOW:
 import { Booking } from '../../booking.entity/entities/booking.entity.entity';
 
 @Entity('rental_items')

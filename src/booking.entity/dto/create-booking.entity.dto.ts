@@ -1,6 +1,6 @@
 import { IsUUID, IsDateString, IsNumber, IsIn } from 'class-validator';
 
-export class CreateBookingEntityDto  {
+export class CreateBookingEntityDto {
   @IsUUID()
   clientId: string;
 

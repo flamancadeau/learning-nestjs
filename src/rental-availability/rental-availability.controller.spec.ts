@@ -11,7 +11,9 @@ describe('RentalAvailabilityController', () => {
       providers: [RentalAvailabilityService],
     }).compile();
 
-    controller = module.get<RentalAvailabilityController>(RentalAvailabilityController);
+    controller = module.get<RentalAvailabilityController>(
+      RentalAvailabilityController,
+    );
   });
 
   it('should be defined', () => {
