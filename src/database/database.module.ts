@@ -7,11 +7,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const dbConfig = configService.get<TypeOrmModuleOptions>('database');
-        if (!dbConfig) throw new Error('Database config missing');
-        return dbConfig;
-      },
+      useFactory: (config: ConfigService) =>
+        config.get<TypeOrmModuleOptions>('database')!,
     }),
   ],
 })

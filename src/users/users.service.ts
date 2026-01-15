@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
@@ -13,12 +17,14 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-  ) { }
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
     // create DTO may provide password or passwordHash; ensure we store passwordHash
     const { password, firstName, lastName, fullName } = createUserDto as any;
-    const passwordHash = password ? await bcrypt.hash(password, 10) : (createUserDto as any).passwordHash;
+    const passwordHash = password
+      ? await bcrypt.hash(password, 10)
+      : (createUserDto as any).passwordHash;
 
     const user = this.usersRepository.create({
       ...createUserDto,
@@ -33,7 +39,10 @@ export class UsersService {
     return result as User;
   }
 
-  async login(email: string, password: string): Promise<{ accessToken: string; user: Partial<User> }> {
+  async login(
+    email: string,
+    password: string,
+  ): Promise<{ accessToken: string; user: Partial<User> }> {
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
@@ -43,7 +52,10 @@ export class UsersService {
     user.lastLogin = new Date();
     await this.usersRepository.save(user);
 
-    const token = signToken({ sub: user.id, email: user.email, role: user.role }, '7d');
+    const token = signToken(
+      { sub: user.id, email: user.email, role: user.role },
+      '1d',
+    );
 
     // remove sensitive fields
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -68,12 +80,21 @@ export class UsersService {
     return safe;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<Partial<User>> {
-    const user = await this.usersRepository.preload({ id, ...(updateUserDto as any) });
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<Partial<User>> {
+    const user = await this.usersRepository.preload({
+      id,
+      ...(updateUserDto as any),
+    });
     if (!user) throw new NotFoundException('User not found');
 
     if ((updateUserDto as any).password) {
-      user.passwordHash = await bcrypt.hash((updateUserDto as any).password, 10);
+      user.passwordHash = await bcrypt.hash(
+        (updateUserDto as any).password,
+        10,
+      );
     }
 
     const saved = await this.usersRepository.save(user);

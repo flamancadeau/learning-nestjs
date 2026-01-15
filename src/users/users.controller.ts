@@ -16,10 +16,14 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  async create(@Body() createUserDto: CreateUserDto) {
+    const user = await this.usersService.create(createUserDto);
+    return {
+      message: 'User created successfully',
+      user,
+    };
   }
-   
+
   @Post('login')
   async login(@Body() body: { email: string; password: string }) {
     return this.usersService.login(body.email, body.password);
@@ -41,7 +45,12 @@ export class UsersController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  async remove(@Param('id') id: string) {
+    const user = await this.usersService.remove(id);
+    return {
+      status: 'true',
+      message: 'user deleted successfully ',
+      user,
+    };
   }
 }
