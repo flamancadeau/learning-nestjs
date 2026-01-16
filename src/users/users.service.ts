@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Injectable,
   NotFoundException,
@@ -10,7 +9,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { signToken } from '../utils/jwt';
+import { signToken } from '../common/utils/jwt';
 
 @Injectable()
 export class UsersService {
@@ -33,8 +32,6 @@ export class UsersService {
     });
 
     const saved = await this.usersRepository.save(user);
-    // remove sensitive fields before return
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash: _, ...result } = saved as any;
     return result as User;
   }
