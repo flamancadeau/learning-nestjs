@@ -17,5 +17,5 @@ export class CreateBookingEntityDto {
   totalPrice: number;
 
   @IsIn(['pending', 'confirmed', 'cancelled', 'completed'])
-  status?: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  status?: 'pending' | 'confirmed' | 'cancelled' | 'completed'|'inreview';
 }

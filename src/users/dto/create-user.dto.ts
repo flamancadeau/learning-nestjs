@@ -7,14 +7,15 @@ import {
 } from 'class-validator';
 
 export class CreateUserDto {
+  @IsOptional()
   @IsString()
   fullName: string;
 
-  @IsOptional()
+  
   @IsString()
   firstName?: string;
 
-  @IsOptional()
+  
   @IsString()
   lastName?: string;
 

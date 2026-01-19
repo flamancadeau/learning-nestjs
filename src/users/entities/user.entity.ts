@@ -6,6 +6,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+import { Exclude } from 'class-transformer';
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -27,6 +29,7 @@ export class User {
   phone?: string;
 
   @Column()
+  @Exclude()
   passwordHash: string;
 
   @Column({ default: 'client' })
@@ -45,5 +48,5 @@ export class User {
   lastLogin?: Date;
 
   @Column({ nullable: true })
-  companyId?: string; // FK to companies table
+  companyId?: string; 
 }

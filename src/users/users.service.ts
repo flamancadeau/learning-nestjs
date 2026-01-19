@@ -1,86 +1,68 @@
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
+import { User } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
-import { signToken } from '../common/utils/jwt';
+import { hashPassword, comparePassword } from '../common/utils/hash';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    // create DTO may provide password or passwordHash; ensure we store passwordHash
-    const { password, firstName, lastName, fullName } = createUserDto as any;
-    const passwordHash = password
-      ? await bcrypt.hash(password, 10)
-      : (createUserDto as any).passwordHash;
+  async create(createUserDto: CreateUserDto) {
+    const { email, password, firstName, lastName } = createUserDto;
+
+    const existingUser = await this.usersRepository.findOne({ where: { email } });
+    if (existingUser) throw new ConflictException('Email already in use');
+
+    const passwordHash = await hashPassword(password);
 
     const user = this.usersRepository.create({
       ...createUserDto,
       passwordHash,
-      fullName: fullName ?? `${firstName ?? ''} ${lastName ?? ''}`.trim(),
+      fullName: createUserDto.fullName ?? `${firstName ?? ''} ${lastName ?? ''}`.trim(),
     });
 
-    const saved = await this.usersRepository.save(user);
-    const { passwordHash: _, ...result } = saved as any;
-    return result as User;
+    const savedUser = await this.usersRepository.save(user);
+    const payload = { sub: savedUser.id, email: savedUser.email };
+    
+    return {
+      user: savedUser,
+      token: this.jwtService.sign(payload),
+    };
   }
 
-  async login(
-    email: string,
-    password: string,
-  ): Promise<{ accessToken: string; user: Partial<User> }> {
+  async login(email: string, password: string) {
     const user = await this.usersRepository.findOne({ where: { email } });
     if (!user) throw new UnauthorizedException('Invalid credentials');
 
-    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    const isMatch = await comparePassword(password, user.passwordHash);
     if (!isMatch) throw new UnauthorizedException('Invalid credentials');
 
-    user.lastLogin = new Date();
-    await this.usersRepository.save(user);
-
-    const token = signToken(
-      { sub: user.id, email: user.email, role: user.role },
-      '1d',
-    );
-
-    // remove sensitive fields
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { passwordHash: _, ...userSafe } = user as any;
-    return { accessToken: token, user: userSafe };
+    const payload = { sub: user.id, email: user.email };
+    return {
+      user,
+      token: this.jwtService.sign(payload),
+    };
   }
 
-  async findAll(): Promise<Partial<User>[]> {
-    const users = await this.usersRepository.find();
-    return users.map((u) => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { passwordHash: _, ...safe } = u as any;
-      return safe;
-    });
+  async findAll(): Promise<User[]> {
+    return await this.usersRepository.find();
   }
 
-  async findOne(id: string): Promise<Partial<User>> {
+  async findOne(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id } });
     if (!user) throw new NotFoundException('User not found');
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { passwordHash: _, ...safe } = user as any;
-    return safe;
+    return user;
   }
 
-  async update(
-    id: string,
-    updateUserDto: UpdateUserDto,
-  ): Promise<Partial<User>> {
+  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.usersRepository.preload({
       id,
       ...(updateUserDto as any),
@@ -88,21 +70,14 @@ export class UsersService {
     if (!user) throw new NotFoundException('User not found');
 
     if ((updateUserDto as any).password) {
-      user.passwordHash = await bcrypt.hash(
-        (updateUserDto as any).password,
-        10,
-      );
+      user.passwordHash = await hashPassword((updateUserDto as any).password);
     }
 
-    const saved = await this.usersRepository.save(user);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { passwordHash: _, ...safe } = saved as any;
-    return safe;
+    return await this.usersRepository.save(user);
   }
 
-  async remove(id: string): Promise<void> {
-    const user = await this.usersRepository.findOne({ where: { id } });
-    if (!user) throw new NotFoundException('User not found');
-    await this.usersRepository.remove(user);
+  async remove(id: string): Promise<User> {
+    const user = await this.findOne(id);
+    return await this.usersRepository.remove(user);
   }
 }

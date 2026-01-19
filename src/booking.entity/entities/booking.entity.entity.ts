@@ -30,7 +30,7 @@ export class Booking {
   totalPrice: number;
 
   @Column({ default: 'pending' })
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed';
+  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'|'inreview';
 
   @CreateDateColumn()
   createdAt: Date;

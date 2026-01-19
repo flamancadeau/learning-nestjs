@@ -5,20 +5,19 @@ import {
   CallHandler,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
-  intercept(
-    context: ExecutionContext,
-    next: CallHandler<any>,
-  ): Observable<any> {
-    return next.handle().pipe(
-      tap((data) => {
-        const response = context.switchToHttp().getResponse();
-        const statusCode = response.statusCode || 200;
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const ctx = context.switchToHttp();
+    const response = ctx.getResponse();
 
-        response.body = {
+    return next.handle().pipe(
+      map((data) => {
+        const statusCode = response.statusCode;
+
+        return {
           statusCode,
           message: 'Request was successful',
           data: data || null,

@@ -19,16 +19,19 @@ export class BookingEntityController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.bookingEntityService.findOne(+id);
+    // FIX: Remove the '+' because service expects a string (UUID)
+    return this.bookingEntityService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateBookingEntityDto: UpdateBookingEntityDto) {
-    return this.bookingEntityService.update(+id, updateBookingEntityDto);
+    
+    return this.bookingEntityService.update(id, updateBookingEntityDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.bookingEntityService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   // FIX: Remove the '+' and ensure the service has the remove() method
+  //   return this.bookingEntityService.remove(id);
+  // }
 }
